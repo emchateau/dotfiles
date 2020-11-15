@@ -8,38 +8,50 @@ export PATH=$PATH:~/TEIC/Stylesheets/bin
 # find the current user top java version specified in Java Preferences
 export JAVA_HOME=$(/usr/libexec/java_home)
 # use gem user directory (gems installed with --user-install)
-if which ruby >/dev/null && which gem >/dev/null; then
-       PATH="$(ruby -rubygems -e 'puts Gem.user_dir')/bin:$PATH"
-    fi
+# if which ruby >/dev/null && which gem >/dev/null; then
+#       PATH="$(ruby -rubygems -e 'puts Gem.user_dir')/bin:$PATH"
+#    fi
+
 # set the java classpath
-export CLASSPATH=$CLASSPATH:"/Library/Java/Extensions/SaxonHE9-8-0-3J/saxon9he.jar":"Library/Java/Extensions/SaxonHE9-8-0-3J/saxon9-xqj.jar":"Library/Java/Extensions/jing-trang/build/jing.jar"
+# export CLASSPATH=$CLASSPATH:"/Library/Java/Extensions/SaxonHE9-8-0-3J/saxon9he.jar":"Library/Java/Extensions/SaxonHE9-8-0-3J/saxon9-xqj.jar":"Library/Java/Extensions/jing-trang/build/jing.jar"
+
+export PATH="/usr/local/opt/ruby/bin:$PATH"
+
+export CLASSPATH=$CLASSPATH:"/Library/Java/Extensions/SaxonEE9-9-1-5J/saxon9ee.jar":"Library/Java/Extensions/SaxonEE9-9-1-5J/saxon9ee.jar":"Library/Java/Extensions/SaxonEE9-9-1-5J/icu4j-59_1.jar":"Library/Java/Extensions/SaxonEE9-9-1-5J/saxon9ee-test.jar":"Library/Java/Extensions/SaxonEE9-9-1-5J/saxon-license.lic":"Library/Java/Extensions/jing-trang/build/jing.jar"
+
+export SAXON_HOME="/Library/Java/Extensions/SaxonEE9-9-1-5J"
+
+PATH=~/xspec/bin:$PATH
+
+export PATH="/usr/local/opt/ruby/bin:$PATH"
+export PATH="/Users/emmanuelchateau/.gem/ruby/2.7.0/bin:$PATH"
 
 # ------------------------
 # color prefix
 # ------------------------
-# NM="\[\033[0;38m\]"
-# HI="\[\033[0;37m\]"
-# HII="\[\033[0;36m\]"
-# SI="\[\033[0;33m\]"
-# IN="\[\033[0m\]"
 
-BLACK="\[\033[0;30m\]"
-RED="\[\033[0;31m\]"
-GREEN="\[\033[0;32m\]"
-YELLOW="\[\033[0;33m\]"
-BLUE="\[\033[0;34m\]"
-PINK="\[\033[0;35m\]"
-CYAN="\[\033[0;36m\]"
-GRAY="\[\033[0;37m\]"
+# red=$(tput setaf 1);
+# orange=$(tput setaf 220);
+# blue=$(tput setaf 38);
+# green=$(tput setaf 71);
+# white=$(tput setaf 15);
+# bold=$(tput bold);
+# reset=$(tput sgr0);
 
-DEFAULT="\[\033[0m\]"
-
+red="\[\033[0;31m\]"
+green="\[\033[0;32m\]"
+orange="\[\033[0;33m\]"
+blue="\[\033[0;34m\]"
+pink="\[\033[0;35m\]"
+white="\[\033[0;36m\]"
+bold=$(tput bold);
+reset=$(tput sgr0);
 
 # ------------------------
 # prompt
 # ------------------------
 
-export PS1=" $HII\u $SI\w$NM $IN"
+export PS1;
 
 # activer la couleur
 export CLICOLOR=1
@@ -51,120 +63,96 @@ export LSCOLORS=ExFxBxDxCxegedabagacad
 # ------------------------
 # dynamic prompt
 # from https://github.com/lucasb-eyer/dotfiles/blob/master/_bash/setprompt.bash
+# from https://gist.github.com/hugorodgerbrown/4143150/f88c9312f64b81dc3ec1082c4d5d4a91e9372104
 # ------------------------
 
-# prompt_command () {
-#     local err_prompt=`prt_ret`
-#     export PS1="${err_prompt}`prt_virtualenv`[`prt_username`@`prt_hostname`:`prt_dir` `prt_time`]`prt_git`\n${BLUE}$ ${DEFAULT}"
-# }
-
-prompt_command () {
-	export PS1="`prt_virtualenv` `prt_username` `prt_dir` `prt_git`${DEFAULT}"
+parse_git_branch() {
+    git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
-PROMPT_COMMAND=prompt_command
+# Detect whether the current directory is a git repository.
+function is_git_repository {
+  git branch > /dev/null 2>&1
+}
 
-prt_ret () {
-    RET=$?
-    if [ $RET -ne 0 ]; then
-        echo "${RED}O.o ${RET} ${DEFAULT}"
+# Determine the branch/state information for this git repository.
+function set_git_branch {
+  # Capture the output of the "git status" command.
+  git_status="$(git status 2> /dev/null)"
+
+  # Set color based on clean/staged/dirty.
+  if [[ ${git_status} =~ "nothing to commit, working tree clean" ]]; then
+    state="${green}"
+  elif [[ ${git_status} =~ "Changes to be committed" ]]; then
+    state="${orange}"
+  else
+    state="${red}"
+  fi
+
+  # Set arrow icon based on status against remote.
+  remote_pattern="Your branch is (.*) of"
+  if [[ ${git_status} =~ ${remote_pattern} ]]; then
+    if [[ ${BASH_REMATCH[1]} == "ahead" ]]; then
+      remote="↑"
     else
-        echo "${TEST}:) ${DEFAULT}"
+      remote="↓"
     fi
+  fi
+  diverge_pattern="Your branch is (.*) have diverged"
+  if [[ ${git_status} =~ ${diverge_pattern} ]]; then
+    remote="↕"
+  fi
+
+  # Get the name of the branch.
+  branch_pattern="On branch ([^${IFS}]*)"
+  if [[ ${git_status} =~ ${branch_pattern} ]]; then
+    branch=${BASH_REMATCH[1]}
+  fi
+
+  # Set the final branch string.
+  BRANCH="${state}(${branch})${remote}${COLOR_NONE} "
 }
 
-prt_virtualenv () {
-    if [ $VIRTUAL_ENV ]; then
-        d=`dirname $VIRTUAL_ENV`
-        parent="`basename $d`/`basename $VIRTUAL_ENV`"
-        pyenv="${PINK}($parent)${DEFAULT} "
-    fi
+# Return the prompt symbol to use, colorized based on the return value of the
+# previous command.
+#function set_prompt_symbol () {
+#  if test $1 -eq 0 ; then
+#      PROMPT_SYMBOL="✩"
+#  else
+#      PROMPT_SYMBOL="${RED}✩${COLOR_NONE}"
+#  fi
+#}
 
-    # Node.js virtualenvs (created using nodeenv from pypi)
-    if [ $NODE_VIRTUAL_ENV ]; then
-        d=`dirname $NODE_VIRTUAL_ENV`
-        parent="`basename $d`/`basename $NODE_VIRTUAL_ENV`"
-        nodeenv="${PINK}($parent)${DEFAULT} "
-    fi
+# Set the full bash prompt.
+function set_bash_prompt () {
+  # Set the PROMPT_SYMBOL variable. We do this first so we don't lose the
+  # return value of the last command.
+  #  set_prompt_symbol $?
 
-    # Go directories
-    if [ $GOPATH ]; then
-        d=`dirname $GOPATH`
-        name="`basename $d`/`basename $GOPATH`"
-        goenv="${PINK}($name)${DEFAULT}"
-    fi
+  # Set the BRANCH variable.
+  if is_git_repository ; then
+    set_git_branch
+  else
+    BRANCH=''
+  fi
 
-    echo "$pyenv$nodeenv$goenv"
+  # Set the bash prompt variable.
+  PS1="\[${bold}\]\n";
+  PS1+="\[${pink}\]\u";
+  PS1+="\[${white}\] @ ";
+  PS1+="\[${blue}\]\h";
+  PS1+="\[${white}\] in ";
+  PS1+="\[${green}\]\W";
+  PS1+=" \[${BRANCH}\]";
+  PS1+="\n";
+  PS1+="☆ \[${reset}\]";
+ # PS1+="\[${PROMPT_SYMBOL}\] \[${reset}\]";
+
+ # PS1="\u@\h \w ${BRANCH}${PROMPT_SYMBOL} "
 }
 
-prt_git () {
-    # Check if inside a git repo
-    git branch > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        return 0
-    fi
-
-    # Capture the output of the "git status" command.
-    git_status=`git status 2> /dev/null`
-
-    # Set color based on clean/staged/dirty.
-    if [[ ${git_status} =~ "working directory clean" ]]; then
-        state="${GREEN}"
-    elif [[ ${git_status} =~ "Changes to be committed" ]]; then
-        state="${YELLOW}"
-    else
-        state="${RED}"
-    fi
-
-    # Set arrow icon based on status against remote.
-    remote_pattern="# Your branch is (.*)"
-    if [[ ${git_status} =~ ${remote_pattern} ]]; then
-        if [[ ${BASH_REMATCH[1]} == "ahead of" ]]; then
-            remote="↑"
-        else
-            remote="↓"
-        fi
-    else
-        remote=""
-    fi
-    diverge_pattern="# Your branch and (.*) have diverged"
-    if [[ ${git_status} =~ ${diverge_pattern} ]]; then
-        remote="↕"
-    fi
-
-    # Get the name of the branch.
-    branch_pattern="^On branch ([^${IFS}]*)"
-    if [[ ${git_status} =~ ${branch_pattern} ]]; then
-         branch=${BASH_REMATCH[1]}
-    fi
-
-    # Set the final branch string.
-    echo "${state}(${branch})${remote} ${DEFAULT}"
-}
-
-
-prt_username () {
-    who=`whoami`
-    if [ $who = "root" ]; then
-        echo "${BRED}${who}${DEFAULT}"
-    else
-        echo "${CYAN}${who}${DEFAULT}"
-    fi
-}
-
-prt_hostname () {
-    echo "${BLUE}\h${DEFAULT}"
-}
-
-prt_dir () {
-    echo "${YELLOW}\w${DEFAULT}"
-}
-
-prt_time () {
-    val=`date +"%k:%M:%S"`
-    echo "${YELLOW}$val${DEFAULT}"
-}
-
+# Tell bash to execute this function just before displaying its prompt.
+PROMPT_COMMAND=set_bash_prompt
 
 # ------------------------
 # bash history
@@ -214,16 +202,21 @@ alias safari='open -a "Safari"'
 # alias chrome='open -a "Google Chrome"'
 alias finder='open -a "Finder"'
 alias firefox='open -a "Firefox"'
-alias oxygen='open -a "/Applications/oxygen20/Oxygen XML Editor.app"'
+alias oxygen='open -a "/Applications/Oxygen XML Editor/Oxygen XML Editor.app"'
 # alias brackets='open -a "Brackets"'
 alias xmplify='open -a "/Applications/Xmplify.app"'
 alias sublime='open -a "/Applications/Sublime Text 2"'
+alias webstorm='open -a "/Applications/WebStorm.app"'
+alias vs='open -a "/Applications/Visual Studio Code.app"'
+alias atom='open -a "/Applications/Atom.app"'
+# alias julia="/Applications/Julia-1.4.app/Contents/Resources/julia/bin/julia"
 
 # ------------------------
 # git
 # ------------------------
 # git autocompletion
 source ~/.git-completion.bash
+alias git='LANG=en_US.UTF-8 git'
 
 # {{{
 # Node Completion - Auto-generated, do not touch.
@@ -233,3 +226,50 @@ for f in $(command ls ~/.node-completion); do
   test -f "$f" && . "$f"
 done
 # }}}
+
+# Setting PATH for Python 3.7
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.7/bin:${PATH}"
+export PATH
+
+# Setting PATH for Python 3.6
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"
+export PATH
+# added by Anaconda2 2019.10 installer
+# >>> conda init >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$(CONDA_REPORT_ERRORS=false '/Users/emmanuelchateau/opt/anaconda2/bin/conda' shell.bash hook 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    \eval "$__conda_setup"
+else
+    if [ -f "/Users/emmanuelchateau/opt/anaconda2/etc/profile.d/conda.sh" ]; then
+# . "/Users/emmanuelchateau/opt/anaconda2/etc/profile.d/conda.sh"  # commented out by conda initialize
+        CONDA_CHANGEPS1=false conda activate base
+    else
+        \export PATH="/Users/emmanuelchateau/opt/anaconda2/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda init <<<
+
+# Setting PATH for Python 3.8
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.8/bin:${PATH}"
+export PATH
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/emmanuelchateau/opt/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/emmanuelchateau/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/emmanuelchateau/opt/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/emmanuelchateau/opt/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
