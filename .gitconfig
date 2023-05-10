@@ -1,0 +1,22 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	name = Emmanuel Château-Dutier
+	email = emchateau@laposte.net
+[core]
+	excludesfile = /Users/emmanuelchateau/.gitignore_global
+	editor = hx
+[alias]
+	st = status
+	ci = commit
+	co = checkout
+	hist = !git log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+[credential]
+	helper = osxkeychain
+[pull]
+	ff = only
+[init]
+	defaultBranch = main
