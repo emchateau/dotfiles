@@ -1,0 +1,4 @@
+# ~/.config/helix/languages.toml
+[[language]]
+name = "markdown"
+soft-wrap.enable = true

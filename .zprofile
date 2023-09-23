@@ -1,8 +1,88 @@
+# -----------------------
+# brew
+# -----------------------
+eval "$(/usr/local/bin/brew shellenv)"
+
+# ------------------------
+# path
+# ------------------------
+export PATH=/usr/local/bin:$PATH
+export PATH=~/.npm-global/bin:$PATH
+export PATH=/Applications/basex/bin:$PATH
+export PATH=/Users/emmanuelchateau/TEIC/Stylesheets/bin:$PATH
+# export PATH="$HOME/.radicle/bin:$PATH"
+# export PATH="/Users/emmanuelchateau/.gem/ruby/2.6.0/bin:$PATH"
+# export PATH="/Users/emmanuelchateau/.lemminx/lemminx-osx-x86_64:$PATH"
+export CLASSPATH=$CLASSPATH:/Library/Java/Extensions/SaxonHE12-3J/saxon-he-12.3.jar
+
+# ------------------------
+# alias generic
+# ------------------------
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+alias mkdir='mkdir -p'
+
+# ------------------------
+# alias typos
+# ------------------------
+alias cd..='cd ..'
+alias cd~='cd ~'
+
+# ------------------------
+# alias ls
+# ------------------------
+alias ll='ls -l'
+alias ls='ls -hF'           # add colors for filetype recognition
+alias la='ls -lah'          # show hidden files
+alias lx='ls -lXBh'         # sort by extension
+alias lk='ls -lSh'          # sort by size, biggest last
+alias lt='ls -lth'          # sort by date, most recent first
+alias ltr='ls -ltrh'        # sort by date, most recent last
+
+# ------------------------
+# alias perso
+# ------------------------
+alias safari='open -a "Safari"'
+# alias chrome='open -a "Google Chrome"'
+alias finder='open -a "Finder"'
+alias firefox='open -a "Firefox"'
+alias oxygen='open -a "/Applications/Oxygen XML Editor/Oxygen XML Editor.app"'
+alias xmplify='open -a "/Applications/Xmplify.app"'
+alias webstorm='open -a "/Applications/WebStorm.app"'
+alias vs='open -a "/Applications/Visual Studio Code.app"'
+alias julia="/Applications/Julia-1.8.app/Contents/Resources/julia/bin/julia"
+alias typora='open -a "/Applications/Typora.app"'
+alias kak="kak -e 'add-highlighter global/ number-lines'"
+alias saxon='java -jar /Library/Java/Extensions/SaxonHE12-3J/saxon-he-12.3.jar'
+
+# ------------------------
+# Helix config
+# ------------------------
+# Helix Search
+# prerequire fzf and ripgrep install with brew
+hxs() {
+	RG_PREFIX="rg -i --files-with-matches"
+	local files
+	files="$(
+		FZF_DEFAULT_COMMAND_DEFAULT_COMMAND="$RG_PREFIX '$1'" \
+			fzf --multi 3 --print0 --sort --preview="[[ ! -z {} ]] && rg --pretty --ignore-case --context 5 {q} {}" \
+				--phony -i -q "$1" \
+				--bind "change:reload:$RG_PREFIX {q}" \
+				--preview-window="70%:wrap" \
+				--bind 'ctrl-a:select-all'
+	)"
+	[[ "$files" ]] && hx --vsplit $(echo $files | tr \\0 " ")
+}
+
+# ------------------------
+# Oh My ZSH 
+# ------------------------
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
+export ZSH="/Users/emmanuelchateau/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -23,13 +103,14 @@ ZSH_THEME="robbyrussell"
 # Case-sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
 
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+# Uncomment the following line to disable bi-weekly auto-update checks.
+# DISABLE_AUTO_UPDATE="true"
+
+# Uncomment the following line to automatically update without prompting.
+# DISABLE_UPDATE_PROMPT="true"
 
 # Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
+# export UPDATE_ZSH_DAYS=13
 
 # Uncomment the following line if pasting URLs and other text is messed up.
 # DISABLE_MAGIC_FUNCTIONS="true"
@@ -44,9 +125,6 @@ ZSH_THEME="robbyrussell"
 # ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
-# You can also set it to another string to have that shown instead of the default red dots.
-# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
 # COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
@@ -99,3 +177,8 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
+
+# export CLICOLOR=1
+# export LSCOLORS=ExFxBxDxCxegedabagacad
+

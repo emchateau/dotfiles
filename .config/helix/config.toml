@@ -1,0 +1,26 @@
+[editor]
+text-width = 100
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+# [editor.indent-guides]
+# character = "╎"
+# render = true
+
+[editor.soft-wrap]
+# enable = true
+wrap-at-text-width = true
+
+[editor.statusline]
+left = ["mode", "spinner", "version-control", "file-name"]
+
+[keys.normal]
+A-x = "extend_to_line_bounds"
+X = ["extend_line_up", "extend_to_line_bounds"]
+
+[keys.select]
+A-x = "extend_to_line_bounds"
+X = ["extend_line_up", "extend_to_line_bounds"]
